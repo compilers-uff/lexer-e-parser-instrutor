@@ -1,0 +1,53 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: class_attr
+      id: class_attr
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: class_attr
+        setup-command: mvn package
+        command: ' java -cp "chocopy-ref.jar:target/assignment.jar" chocopy.ChocoPy
+          --pass=s --test --dir src/test/data/pa1/sample/class_attr.py'
+        timeout: 10
+        max-score: 1
+    - name: class_attr_get
+      id: class_attr_get
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: class_attr_get
+        setup-command: ''
+        command: ' java -cp "chocopy-ref.jar:target/assignment.jar" chocopy.ChocoPy
+          --pass=s --test --dir src/test/data/pa1/sample/class_attr_get.py'
+        timeout: 10
+        max-score: 1
+    - name: expr_plus
+      id: expr_plus
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: expr_plus
+        setup-command: ''
+        command: ' java -cp "chocopy-ref.jar:target/assignment.jar" chocopy.ChocoPy
+          --pass=s --test --dir src/test/data/pa1/sample/expr_plus.py'
+        timeout: 10
+        max-score: 1
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        CLASS_ATTR_RESULTS: "${{steps.class_attr.outputs.result}}"
+        CLASS_ATTR_GET_RESULTS: "${{steps.class_attr_get.outputs.result}}"
+        EXPR_PLUS_RESULTS: "${{steps.expr_plus.outputs.result}}"
+      with:
+        runners: class_attr,class_attr_get,expr_plus
